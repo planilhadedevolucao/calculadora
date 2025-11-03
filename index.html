@@ -1,0 +1,482 @@
+<!doctype html>
+<html lang="pt-BR">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calculadora de Devolução</title>
+  <script src="/_sdk/element_sdk.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      box-sizing: border-box;
+    }
+
+  </style>
+ 
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+ </head>
+ <body class="h-full min-h-full"><!-- Preloader -->
+  <div id="preloader" class="fixed inset-0 bg-gradient-to-br from-gray-900 to-black flex items-center justify-center z-50">
+   <div class="text-center"><!-- Calculadora animada -->
+    <div class="relative bg-gradient-to-b from-gray-800 to-gray-900 rounded-3xl shadow-2xl p-6 border-4 border-gray-700 mb-6 animate-pulse"><!-- Display da calculadora -->
+     <div class="bg-black rounded-xl p-4 mb-4 border-2 border-gray-600 shadow-inner">
+      <div class="bg-green-900 rounded-lg p-3 h-16 flex items-center justify-center">
+       <div class="text-green-400 font-mono text-lg font-bold animate-pulse">
+        INICIALIZANDO...
+       </div>
+      </div>
+     </div><!-- Botões simulados -->
+     <div class="grid grid-cols-4 gap-2">
+      <div class="h-8 bg-gray-700 rounded animate-pulse"></div>
+      <div class="h-8 bg-gray-700 rounded animate-pulse"></div>
+      <div class="h-8 bg-gray-700 rounded animate-pulse"></div>
+      <div class="h-8 bg-blue-600 rounded animate-pulse"></div>
+     </div><!-- Luzes de status piscando -->
+     <div class="mt-3 flex justify-center space-x-1">
+      <div class="w-2 h-2 bg-red-500 rounded-full animate-ping"></div>
+      <div class="w-2 h-2 bg-yellow-500 rounded-full animate-ping" style="animation-delay: 0.2s"></div>
+      <div class="w-2 h-2 bg-green-500 rounded-full animate-ping" style="animation-delay: 0.4s"></div>
+     </div>
+    </div><!-- Texto de carregamento -->
+    <div class="text-white font-mono">
+     <div class="text-xl font-bold mb-2">
+      CALCULADORA DE DEVOLUÇÃO
+     </div>
+     <div class="text-sm text-gray-400 mb-4">
+      Carregando sistema...
+     </div><!-- Barra de progresso -->
+     <div class="w-64 bg-gray-700 rounded-full h-2 mx-auto">
+      <div id="progressBar" class="bg-green-500 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+     </div>
+     <div class="text-xs text-gray-500 mt-2"><span id="loadingText">Inicializando componentes...</span>
+     </div>
+    </div>
+   </div>
+  </div>
+  <div id="app" class="h-full min-h-full w-full" style="display: none;"><!-- Modal de Informações -->
+   <div id="infoModal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 hidden">
+    <div class="bg-gradient-to-b from-gray-800 to-gray-900 rounded-lg sm:rounded-xl md:rounded-2xl p-4 xs:p-6 sm:p-8 md:p-10 lg:p-12 max-w-xs xs:max-w-sm sm:max-w-md md:max-w-lg lg:max-w-xl xl:max-w-2xl mx-4 border-2 border-gray-600 shadow-2xl"><!-- Cabeçalho do Modal -->
+     <div class="flex justify-between items-center mb-4 xs:mb-6 sm:mb-8">
+      <h2 class="text-white font-bold text-base xs:text-lg sm:text-xl md:text-2xl lg:text-3xl">📊 Como Usar a Calculadora</h2><button id="closeModal" class="text-gray-400 hover:text-white text-xl xs:text-2xl sm:text-3xl md:text-4xl font-bold transition-colors"> × </button>
+     </div><!-- Conteúdo do Modal -->
+     <div class="text-white space-y-3 xs:space-y-4 sm:space-y-6">
+      <div class="bg-gray-700 rounded-md sm:rounded-lg p-3 xs:p-4 sm:p-6 border border-gray-600">
+       <h3 class="font-semibold text-sm xs:text-base sm:text-lg md:text-xl mb-2 xs:mb-3 text-blue-400">🎯 Objetivo</h3>
+       <p class="text-xs xs:text-sm sm:text-base md:text-lg text-gray-300">Calcular a porcentagem de notas fiscais devolvidas em relação ao total de notas entregues.</p>
+      </div>
+      <div class="bg-gray-700 rounded-md sm:rounded-lg p-3 xs:p-4 sm:p-6 border border-gray-600">
+       <h3 class="font-semibold text-sm xs:text-base sm:text-lg md:text-xl mb-2 xs:mb-3 text-green-400">📝 Como Usar</h3>
+       <ol class="text-xs xs:text-sm sm:text-base md:text-lg text-gray-300 space-y-1 xs:space-y-2 list-decimal list-inside">
+        <li>Digite o número total de <strong>notas entregues</strong></li>
+        <li>Digite o número de <strong>notas devolvidas</strong></li>
+        <li>Clique em <strong>"CALCULAR"</strong> para ver o resultado</li>
+        <li>Use <strong>"LIMPAR"</strong> para resetar os campos</li>
+       </ol>
+      </div>
+      <div class="bg-gray-700 rounded-md sm:rounded-lg p-3 xs:p-4 sm:p-6 border border-gray-600">
+       <h3 class="font-semibold text-sm xs:text-base sm:text-lg md:text-xl mb-2 xs:mb-3 text-yellow-400">⚠️ Regras</h3>
+       <ul class="text-xs xs:text-sm sm:text-base md:text-lg text-gray-300 space-y-1 xs:space-y-2 list-disc list-inside">
+        <li>Notas entregues deve ser <strong>maior que zero</strong></li>
+        <li>Notas devolvidas <strong>não pode ser maior</strong> que notas entregues</li>
+        <li>Resultado <strong>verde</strong>: ≤ 4% (bom desempenho)</li>
+        <li>Resultado <strong>vermelho</strong>: &gt; 4% (atenção necessária)</li>
+       </ul>
+      </div>
+      <div class="bg-gray-700 rounded-md sm:rounded-lg p-3 xs:p-4 sm:p-6 border border-gray-600">
+       <h3 class="font-semibold text-sm xs:text-base sm:text-lg md:text-xl mb-2 xs:mb-3 text-purple-400">💡 Exemplo</h3>
+       <p class="text-xs xs:text-sm sm:text-base md:text-lg text-gray-300"><strong>Entregues:</strong> 100 notas<br><strong>Devolvidas:</strong> 3 notas<br><strong>Resultado:</strong> 3.00% (bom desempenho)</p>
+      </div>
+     </div><!-- Botão de Fechar -->
+     <div class="mt-4 xs:mt-6 sm:mt-8 text-center"><button id="closeModalBtn" class="bg-blue-600 hover:bg-blue-500 text-white px-6 xs:px-8 sm:px-12 py-2 xs:py-3 sm:py-4 rounded-md sm:rounded-lg font-bold text-sm xs:text-base sm:text-lg md:text-xl transition-all transform hover:scale-105 active:scale-95 shadow-lg"> Entendi! </button>
+     </div>
+    </div>
+   </div>
+   <div class="w-full h-full flex flex-col"><!-- Calculadora com formato físico -->
+    <div class="relative bg-gradient-to-b from-gray-800 to-gray-900 rounded-none sm:rounded-lg md:rounded-xl lg:rounded-2xl shadow-2xl p-2 xs:p-3 sm:p-4 md:p-6 lg:p-8 xl:p-10 2xl:p-12 border-0 sm:border border-gray-700 sm:border-2 flex-1 flex flex-col justify-between min-h-0"><!-- Display da calculadora -->
+     <div class="bg-black rounded-md sm:rounded-lg md:rounded-xl p-2 xs:p-3 sm:p-4 md:p-6 lg:p-8 xl:p-10 mb-2 xs:mb-3 sm:mb-4 md:mb-6 lg:mb-8 border border-gray-600 sm:border-2 shadow-inner flex-shrink-0">
+      <div class="bg-green-900 rounded-sm sm:rounded-md md:rounded-lg p-4 xs:p-6 sm:p-8 md:p-12 lg:p-16 xl:p-20 2xl:p-24 min-h-[120px] xs:min-h-[150px] sm:min-h-[180px] md:min-h-[220px] lg:min-h-[260px] xl:min-h-[300px] 2xl:min-h-[350px] flex items-center justify-center">
+       <div id="display" class="text-green-400 font-mono text-center w-full">
+        <div id="displayTitle" class="text-xs xs:text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl 2xl:text-3xl mb-1 xs:mb-2 sm:mb-3 md:mb-4">
+         CALCULADORA DE DEVOLUÇÃO
+        </div>
+        <div id="displayResult" class="text-2xl xs:text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl 2xl:text-8xl font-bold mb-1 xs:mb-2 sm:mb-3 md:mb-4">
+         0.00%
+        </div>
+        <div id="displayDetails" class="text-xs xs:text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl 2xl:text-3xl text-green-300 hidden">
+         Aguardando cálculo...
+        </div>
+       </div>
+      </div>
+     </div><!-- Área de entrada -->
+     <form id="calculatorForm" class="space-y-4 xs:space-y-5 sm:space-y-6 md:space-y-8 lg:space-y-10 xl:space-y-12 2xl:space-y-14 flex-1 flex flex-col justify-center">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 xs:gap-5 sm:gap-6 md:gap-8 lg:gap-10 xl:gap-12 2xl:gap-14">
+       <div class="bg-gray-700 rounded-md sm:rounded-lg md:rounded-xl p-4 xs:p-5 sm:p-7 md:p-10 lg:p-12 xl:p-14 2xl:p-16 border border-gray-600 sm:border-2"><label for="delivered" id="deliveredLabel" class="block text-white text-sm xs:text-base sm:text-lg md:text-xl lg:text-2xl xl:text-3xl font-medium mb-2 xs:mb-3 sm:mb-4 md:mb-6">Notas Entregues</label> <input type="number" id="delivered" min="0" step="1" required class="w-full px-3 xs:px-4 sm:px-6 md:px-8 lg:px-10 py-3 xs:py-4 sm:py-6 md:py-8 lg:py-10 xl:py-12 bg-gray-800 text-white rounded-sm sm:rounded-md md:rounded-lg border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all font-mono text-base xs:text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl" placeholder="0">
+       </div>
+       <div class="bg-gray-700 rounded-md sm:rounded-lg md:rounded-xl p-4 xs:p-5 sm:p-7 md:p-10 lg:p-12 xl:p-14 2xl:p-16 border border-gray-600 sm:border-2"><label for="returned" id="returnedLabel" class="block text-white text-sm xs:text-base sm:text-lg md:text-xl lg:text-2xl xl:text-3xl font-medium mb-2 xs:mb-3 sm:mb-4 md:mb-6">Notas Devolvidas</label> <input type="number" id="returned" min="0" step="1" required class="w-full px-3 xs:px-4 sm:px-6 md:px-8 lg:px-10 py-3 xs:py-4 sm:py-6 md:py-8 lg:py-10 xl:py-12 bg-gray-800 text-white rounded-sm sm:rounded-md md:rounded-lg border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all font-mono text-base xs:text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl" placeholder="0">
+       </div>
+      </div><!-- Botões da calculadora -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 xs:gap-5 sm:gap-6 md:gap-8 lg:gap-10 xl:gap-12 2xl:gap-14 mt-4 xs:mt-5 sm:mt-6 md:mt-8 lg:mt-10 xl:mt-12"><button type="submit" id="calculateBtn" class="py-6 xs:py-7 sm:py-8 md:py-10 lg:py-12 xl:py-14 2xl:py-18 rounded-md sm:rounded-lg md:rounded-xl font-bold text-sm xs:text-base sm:text-lg md:text-xl lg:text-2xl xl:text-3xl 2xl:text-4xl transition-all transform hover:scale-105 active:scale-95 shadow-lg border border-gray-600 sm:border-2 bg-gradient-to-b from-blue-500 to-blue-600 text-white hover:from-blue-400 hover:to-blue-500"> = CALCULAR </button> <button type="button" id="clearBtn" class="py-6 xs:py-7 sm:py-8 md:py-10 lg:py-12 xl:py-14 2xl:py-18 rounded-md sm:rounded-lg md:rounded-xl font-bold text-sm xs:text-base sm:text-lg md:text-xl lg:text-2xl xl:text-3xl 2xl:text-4xl transition-all transform hover:scale-105 active:scale-95 shadow-lg border border-gray-600 sm:border-2 bg-gradient-to-b from-red-500 to-red-600 text-white hover:from-red-400 hover:to-red-500"> C LIMPAR </button>
+      </div>
+     </form><!-- Área de erro -->
+     <div id="error" class="mt-4 xs:mt-5 sm:mt-6 md:mt-8 lg:mt-10 xl:mt-12 bg-red-900 border border-red-700 sm:border-2 rounded-md sm:rounded-lg md:rounded-xl p-4 xs:p-5 sm:p-7 md:p-10 lg:p-12 xl:p-14 text-center hidden flex-shrink-0">
+      <p class="font-medium text-white text-sm xs:text-base sm:text-lg md:text-xl lg:text-2xl xl:text-3xl" id="errorText"></p>
+     </div><!-- Detalhes da calculadora -->
+     <div class="mt-4 xs:mt-5 sm:mt-6 md:mt-8 lg:mt-10 xl:mt-12 flex flex-col items-center space-y-3 xs:space-y-4 sm:space-y-5 text-xs xs:text-sm sm:text-base md:text-lg lg:text-xl text-white flex-shrink-0"><!-- Botão centralizado --> <button id="infoBtn" class="bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-500 hover:to-orange-600 text-white rounded-lg px-3 xs:px-3.5 sm:px-4 md:px-5 py-1.5 xs:py-2 sm:py-2 md:py-2.5 flex items-center space-x-1.5 xs:space-x-2 sm:space-x-2 text-xs xs:text-xs sm:text-sm md:text-sm font-bold transition-all transform hover:scale-105 active:scale-95 shadow-lg border border-orange-500 hover:border-orange-400" title="Regras de uso da calculadora">
+       <svg class="w-3 h-3 xs:w-3.5 xs:h-3.5 sm:w-4 sm:h-4 md:w-4 md:h-4" fill="currentColor" viewbox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
+       </svg><span class="font-bold">REGRAS DE USO</span> </button> <!-- Informações da calculadora -->
+      <div class="flex justify-between items-center w-full"><span class="text-xs xs:text-sm sm:text-base md:text-lg lg:text-xl">CALC DEV v1.0</span>
+       <div class="flex space-x-1 xs:space-x-2 sm:space-x-3">
+        <div class="w-1.5 h-1.5 xs:w-2 xs:h-2 sm:w-3 sm:h-3 md:w-4 md:h-4 lg:w-5 lg:h-5 bg-green-500 rounded-full"></div>
+        <div class="w-1.5 h-1.5 xs:w-2 xs:h-2 sm:w-3 sm:h-3 md:w-4 md:h-4 lg:w-5 lg:h-5 bg-green-500 rounded-full"></div>
+        <div class="w-1.5 h-1.5 xs:w-2 xs:h-2 sm:w-3 sm:h-3 md:w-4 md:h-4 lg:w-5 lg:h-5 bg-green-500 rounded-full"></div>
+       </div>
+      </div>
+     </div>
+    </div>
+   </div>
+  </div>
+  <script>
+    const defaultConfig = {
+      background_color: "#f0f4f8",
+      card_color: "#ffffff",
+      text_color: "#1e293b",
+      primary_button_color: "#3b82f6",
+      accent_color: "#10b981",
+      font_family: "system-ui",
+      font_size: 16,
+      title: "Calculadora de Devolução",
+      subtitle: "Calcule a porcentagem de notas devolvidas",
+      delivered_label: "Notas Entregues",
+      returned_label: "Notas Devolvidas",
+      button_text: "Calcular"
+    };
+
+    let config = { ...defaultConfig };
+
+    async function onConfigChange(newConfig) {
+      config = { ...newConfig };
+      
+      const baseSize = config.font_size || defaultConfig.font_size;
+      const customFont = config.font_family || defaultConfig.font_family;
+      const fontStack = `${customFont}, system-ui, -apple-system, sans-serif`;
+      
+      document.body.style.backgroundColor = config.background_color || defaultConfig.background_color;
+      document.body.style.color = config.text_color || defaultConfig.text_color;
+      document.body.style.fontFamily = fontStack;
+      
+      const card = document.querySelector('.rounded-2xl');
+      card.style.backgroundColor = config.card_color || defaultConfig.card_color;
+      
+      const title = document.getElementById('title');
+      title.textContent = config.title || defaultConfig.title;
+      title.style.color = config.text_color || defaultConfig.text_color;
+      title.style.fontSize = `${baseSize * 2}px`;
+      title.style.fontFamily = fontStack;
+      
+      const subtitle = document.getElementById('subtitle');
+      subtitle.textContent = config.subtitle || defaultConfig.subtitle;
+      subtitle.style.color = config.text_color || defaultConfig.text_color;
+      subtitle.style.fontSize = `${baseSize * 1.125}px`;
+      subtitle.style.fontFamily = fontStack;
+      
+      const deliveredLabel = document.getElementById('deliveredLabel');
+      deliveredLabel.textContent = config.delivered_label || defaultConfig.delivered_label;
+      deliveredLabel.style.color = '#ffffff';
+      deliveredLabel.style.fontSize = `${baseSize * 0.875}px`;
+      deliveredLabel.style.fontFamily = fontStack;
+      
+      const returnedLabel = document.getElementById('returnedLabel');
+      returnedLabel.textContent = config.returned_label || defaultConfig.returned_label;
+      returnedLabel.style.color = '#ffffff';
+      returnedLabel.style.fontSize = `${baseSize * 0.875}px`;
+      returnedLabel.style.fontFamily = fontStack;
+      
+      const inputs = document.querySelectorAll('input[type="number"]');
+      inputs.forEach(input => {
+        input.style.borderColor = config.card_color || defaultConfig.card_color;
+        input.style.fontSize = `${baseSize}px`;
+        input.style.fontFamily = fontStack;
+        input.style.color = config.text_color || defaultConfig.text_color;
+      });
+      
+      const calculateBtn = document.getElementById('calculateBtn');
+      calculateBtn.textContent = config.button_text || defaultConfig.button_text;
+      calculateBtn.style.backgroundColor = config.primary_button_color || defaultConfig.primary_button_color;
+      calculateBtn.style.color = '#ffffff';
+      calculateBtn.style.fontSize = `${baseSize * 1.125}px`;
+      calculateBtn.style.fontFamily = fontStack;
+      
+      const clearBtn = document.getElementById('clearBtn');
+      clearBtn.style.borderColor = config.primary_button_color || defaultConfig.primary_button_color;
+      clearBtn.style.color = config.primary_button_color || defaultConfig.primary_button_color;
+      clearBtn.style.backgroundColor = 'transparent';
+      clearBtn.style.fontSize = `${baseSize * 1.125}px`;
+      clearBtn.style.fontFamily = fontStack;
+      
+      const percentage = document.getElementById('percentage');
+      percentage.style.color = config.accent_color || defaultConfig.accent_color;
+      percentage.style.fontSize = `${baseSize * 3}px`;
+      percentage.style.fontFamily = fontStack;
+      
+      const resultText = document.getElementById('resultText');
+      resultText.style.color = '#ffffff';
+      resultText.style.fontSize = `${baseSize * 0.875}px`;
+      resultText.style.fontFamily = fontStack;
+      
+      const result = document.getElementById('result');
+      result.style.backgroundColor = config.card_color || defaultConfig.card_color;
+      
+      const error = document.getElementById('error');
+      error.style.backgroundColor = '#fee2e2';
+      
+      const errorText = document.getElementById('errorText');
+      errorText.style.color = '#ffffff';
+      errorText.style.fontSize = `${baseSize * 0.875}px`;
+      errorText.style.fontFamily = fontStack;
+    }
+
+    function mapToCapabilities(config) {
+      return {
+        recolorables: [
+          {
+            get: () => config.background_color || defaultConfig.background_color,
+            set: (value) => {
+              config.background_color = value;
+              if (window.elementSdk) {
+                window.elementSdk.setConfig({ background_color: value });
+              }
+            }
+          },
+          {
+            get: () => config.card_color || defaultConfig.card_color,
+            set: (value) => {
+              config.card_color = value;
+              if (window.elementSdk) {
+                window.elementSdk.setConfig({ card_color: value });
+              }
+            }
+          },
+          {
+            get: () => config.text_color || defaultConfig.text_color,
+            set: (value) => {
+              config.text_color = value;
+              if (window.elementSdk) {
+                window.elementSdk.setConfig({ text_color: value });
+              }
+            }
+          },
+          {
+            get: () => config.primary_button_color || defaultConfig.primary_button_color,
+            set: (value) => {
+              config.primary_button_color = value;
+              if (window.elementSdk) {
+                window.elementSdk.setConfig({ primary_button_color: value });
+              }
+            }
+          },
+          {
+            get: () => config.accent_color || defaultConfig.accent_color,
+            set: (value) => {
+              config.accent_color = value;
+              if (window.elementSdk) {
+                window.elementSdk.setConfig({ accent_color: value });
+              }
+            }
+          }
+        ],
+        borderables: [],
+        fontEditable: {
+          get: () => config.font_family || defaultConfig.font_family,
+          set: (value) => {
+            config.font_family = value;
+            if (window.elementSdk) {
+              window.elementSdk.setConfig({ font_family: value });
+            }
+          }
+        },
+        fontSizeable: {
+          get: () => config.font_size || defaultConfig.font_size,
+          set: (value) => {
+            config.font_size = value;
+            if (window.elementSdk) {
+              window.elementSdk.setConfig({ font_size: value });
+            }
+          }
+        }
+      };
+    }
+
+    function mapToEditPanelValues(config) {
+      return new Map([
+        ["title", config.title || defaultConfig.title],
+        ["subtitle", config.subtitle || defaultConfig.subtitle],
+        ["delivered_label", config.delivered_label || defaultConfig.delivered_label],
+        ["returned_label", config.returned_label || defaultConfig.returned_label],
+        ["button_text", config.button_text || defaultConfig.button_text]
+      ]);
+    }
+
+    if (window.elementSdk) {
+      window.elementSdk.init({
+        defaultConfig,
+        onConfigChange,
+        mapToCapabilities,
+        mapToEditPanelValues
+      });
+    }
+
+    const form = document.getElementById('calculatorForm');
+    const errorDiv = document.getElementById('error');
+    const errorTextEl = document.getElementById('errorText');
+    const clearBtn = document.getElementById('clearBtn');
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      
+      const delivered = parseFloat(document.getElementById('delivered').value);
+      const returned = parseFloat(document.getElementById('returned').value);
+      
+      errorDiv.classList.add('hidden');
+      
+      if (returned > delivered) {
+        errorTextEl.textContent = 'O número de notas devolvidas não pode ser maior que o número de notas entregues.';
+        errorDiv.classList.remove('hidden');
+        // Atualiza display com erro
+        document.getElementById('displayResult').textContent = 'ERRO';
+        document.getElementById('displayResult').style.color = '#ef4444';
+        document.getElementById('displayDetails').textContent = 'Valor inválido inserido';
+        document.getElementById('displayDetails').style.color = '#ef4444';
+        document.getElementById('displayDetails').classList.remove('hidden');
+        return;
+      }
+      
+      if (delivered === 0) {
+        errorTextEl.textContent = 'O número de notas entregues deve ser maior que zero.';
+        errorDiv.classList.remove('hidden');
+        // Atualiza display com erro
+        document.getElementById('displayResult').textContent = 'ERRO';
+        document.getElementById('displayResult').style.color = '#ef4444';
+        document.getElementById('displayDetails').textContent = 'Valor inválido inserido';
+        document.getElementById('displayDetails').style.color = '#ef4444';
+        document.getElementById('displayDetails').classList.remove('hidden');
+        return;
+      }
+      
+      const percentage = (returned / delivered) * 100;
+      
+      // Atualiza o display da calculadora com resultado completo
+      document.getElementById('displayResult').textContent = `${percentage.toFixed(2)}%`;
+      document.getElementById('displayDetails').textContent = `${returned} de ${delivered} notas devolvidas`;
+      document.getElementById('displayDetails').classList.remove('hidden');
+      
+      // Muda a cor baseado na porcentagem
+      if (percentage > 4) {
+        document.getElementById('displayResult').style.color = '#ef4444'; // Vermelho para alta devolução
+        document.getElementById('displayDetails').style.color = '#fca5a5'; // Vermelho claro para detalhes
+      } else {
+        document.getElementById('displayResult').style.color = '#22c55e'; // Verde para baixa devolução
+        document.getElementById('displayDetails').style.color = '#86efac'; // Verde claro para detalhes
+      }
+    });
+
+    clearBtn.addEventListener('click', () => {
+      document.getElementById('delivered').value = '';
+      document.getElementById('returned').value = '';
+      errorDiv.classList.add('hidden');
+      // Reseta o display
+      document.getElementById('displayResult').textContent = '0.00%';
+      document.getElementById('displayResult').style.color = '#22c55e';
+      document.getElementById('displayDetails').textContent = 'Aguardando cálculo...';
+      document.getElementById('displayDetails').style.color = '#86efac';
+      document.getElementById('displayDetails').classList.add('hidden');
+    });
+
+    // Modal de informações
+    const infoBtn = document.getElementById('infoBtn');
+    const infoModal = document.getElementById('infoModal');
+    const closeModal = document.getElementById('closeModal');
+    const closeModalBtn = document.getElementById('closeModalBtn');
+
+    infoBtn.addEventListener('click', () => {
+      infoModal.classList.remove('hidden');
+      infoModal.style.opacity = '0';
+      infoModal.style.transition = 'opacity 0.3s ease-in-out';
+      setTimeout(() => {
+        infoModal.style.opacity = '1';
+      }, 10);
+    });
+
+    function closeInfoModal() {
+      infoModal.style.opacity = '0';
+      setTimeout(() => {
+        infoModal.classList.add('hidden');
+      }, 300);
+    }
+
+    closeModal.addEventListener('click', closeInfoModal);
+    closeModalBtn.addEventListener('click', closeInfoModal);
+
+    // Fechar modal clicando fora dele
+    infoModal.addEventListener('click', (e) => {
+      if (e.target === infoModal) {
+        closeInfoModal();
+      }
+    });
+
+    // Fechar modal com tecla ESC
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !infoModal.classList.contains('hidden')) {
+        closeInfoModal();
+      }
+    });
+
+    // Preloader logic
+    const preloader = document.getElementById('preloader');
+    const app = document.getElementById('app');
+    const progressBar = document.getElementById('progressBar');
+    const loadingText = document.getElementById('loadingText');
+    
+    const loadingSteps = [
+      { progress: 20, text: 'Inicializando componentes...' },
+      { progress: 40, text: 'Carregando interface...' },
+      { progress: 60, text: 'Configurando calculadora...' },
+      { progress: 80, text: 'Verificando sistema...' },
+      { progress: 100, text: 'Pronto!' }
+    ];
+    
+    let currentStep = 0;
+    
+    function updateLoader() {
+      if (currentStep < loadingSteps.length) {
+        const step = loadingSteps[currentStep];
+        progressBar.style.width = step.progress + '%';
+        loadingText.textContent = step.text;
+        currentStep++;
+        
+        if (currentStep < loadingSteps.length) {
+          setTimeout(updateLoader, 600);
+        } else {
+          setTimeout(() => {
+            preloader.style.opacity = '0';
+            preloader.style.transition = 'opacity 0.5s ease-out';
+            setTimeout(() => {
+              preloader.style.display = 'none';
+              app.style.display = 'flex';
+              app.style.opacity = '0';
+              app.style.transition = 'opacity 0.5s ease-in';
+              setTimeout(() => {
+                app.style.opacity = '1';
+              }, 50);
+            }, 500);
+          }, 800);
+        }
+      }
+    }
+    
+    // Inicia o preloader
+    setTimeout(updateLoader, 500);
+
+    onConfigChange(defaultConfig);
+  </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'99878e6835886242',t:'MTc2MjEyNzY1OC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
